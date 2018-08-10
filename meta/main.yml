@@ -29,10 +29,10 @@ galaxy_info:
     - all
 
   galaxy_tags:
-  - Lenovo
+  - lenovo
   - system
   - enterprise
   - lxca
-  - xClarity
+  - xclarity
 
 dependencies: []
