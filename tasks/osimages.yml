@@ -1,3 +1,4 @@
+---
 - name: Get or Apply osimages to device from LXCA
   pylxca_module:
     login_user: "{{ lxca_user }}"
@@ -8,4 +9,4 @@
     command_options: osimages
   register: rslt
   tags:
-     osimages
+    osimages

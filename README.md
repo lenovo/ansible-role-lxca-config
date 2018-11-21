@@ -11,7 +11,7 @@ Requirements
   documentation](http://docs.ansible.com/ansible/intro_installation.html))
 
 - Python Client for Lenovo xClarity Administratr.([LXCA Python Client
-  v2.1.0](https://github.com/lenovo/pylxca))
+  v2.2.0](https://github.com/lenovo/pylxca))
 
    pip install pylxca
 
@@ -183,7 +183,8 @@ description:
                            the selected endpoints."
   - "delayed - Uses Delayed Activaton mode when applying firmware updates to the
                            selected endpoints."
-
+  - "prioritized -  Firmware updates on the baseboard management controller
+                        are activated immediately."
 ```
 List all  policy  
 ----------------
@@ -479,6 +480,12 @@ ansible-playbook -e "{'lxca_user':'USERID', 'lxca_password':'Passw0rd', 'lxca_ur
 get globalSetting for osimages
 -----------------
 ansible-playbook -e "{'lxca_user':'USERID', 'lxca_password':'Passw0rd', 'lxca_url':'https://10.240.29.217','osimages_info':'globalSettings'}" playbooks/config/config.yml -vvvv --tag osimages
+
+set globalSetting for osimages
+-----------------
+for setting globalSetting get detail from get golbalSetting and change the
+parameter you want to change. This example set LINUX default password.
+ansible-playbook -e "{'lxca_user':'USERID', 'lxca_password':'CME44ibm', 'lxca_url':'https://10.243.9.238', 'osimages_info':'globalSettings', 'osimages_dict':{'activeDirectory':{'allDomains': [],'defaultDomain':None}, 'credentials':[{'name': 'root', 'password':'Test1234', 'passwordChanged':True, 'type': 'LINUX'}, {'type': "WINDOWS", 'name': 'Administrator', password: None, 'passwordChanged': False}],'ipAssignment':'dhcpv4', 'isVLANMode': 'false', 'licenseKeys': {'win2012r1': {'dataCenterLicenseKey': '','standardLicenseKey': '',},'win2012r2':{'dataCenterLicenseKey': '', 'standardLicenseKey': ''}, 'win2016r1': {'dataCenterLicenseKey': '', 'standardLicenseKey': ''}, 'win2019r1': {'dataCenterLicenseKey': '','standardLicenseKey': ''}}}}" playbooks/config/config.yml -vvvv --tag osimages
 
 import osimage file from remote server
 -------------------------------------
