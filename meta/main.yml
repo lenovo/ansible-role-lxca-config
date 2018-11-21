@@ -1,7 +1,8 @@
 galaxy_info:
   author: Prashant Bhosale
 
-  description:  The lxca-config ansible role facilitates configuration of managed endpoiints from Lenovo xClarity Adiministrator.
+  description:  The lxca-config ansible role facilitates 
+    configuration of managed endpoiints from Lenovo xClarity Adiministrator.
 
   company: Lenovo
 
