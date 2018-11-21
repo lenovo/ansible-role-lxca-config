@@ -1,3 +1,4 @@
+---
 - block:
   - name: Unmanaging given endpoint
     pylxca_module:

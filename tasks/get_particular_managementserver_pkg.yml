@@ -1,3 +1,4 @@
+---
 - name: get managementserver updates on LXCA
   pylxca_module:
     login_user: "{{ lxca_user }}"

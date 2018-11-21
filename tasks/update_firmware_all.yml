@@ -1,3 +1,4 @@
+---
 - block:
   - name: Updating Firmware of all updateable components from LXCA
     pylxca_module:
@@ -14,7 +15,7 @@
   - name: Check firmware update job submission
     assert:
       that:
-       -  " 'Success' in rslt_job.msg"
+        - " 'Success' in rslt_job.msg"
   - debug:
       var: rslt_job.result.JobID
 
@@ -36,9 +37,8 @@
   - name: Check firmware update job completion status
     assert:
       that:
-       -  " 'Complete' in result.result.TaskList[0].status"
-       -  " 'CompleteWithErrors' not in result.result.TaskList[0].status"
+        - " 'Complete' in result.result.TaskList[0].status"
+        - " 'CompleteWithErrors' not in result.result.TaskList[0].status"
 
   tags:
     update_all_firmware_withpolicy
-

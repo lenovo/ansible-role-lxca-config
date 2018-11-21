@@ -1,3 +1,4 @@
+---
 - name: get apply configpatterns on LXCA
   pylxca_module:
     login_user: "{{ lxca_user }}"
@@ -11,4 +12,4 @@
     command_options: apply_configpatterns
   register: rslt
   tags:
-     apply_configpatterns
+    apply_configpatterns

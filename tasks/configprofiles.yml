@@ -1,3 +1,4 @@
+---
 - name: get configprofiles data from LXCA
   pylxca_module:
     login_user: "{{ lxca_user }}"
@@ -5,7 +6,7 @@
     auth_url: "{{ lxca_url }}"
     id: "{{ id }}"
     config_profile_name: "{{ config_profile_name }}"
-    endpoint: "{{ endpoint}}"
+    endpoint: "{{ endpoint }}"
     restart: "{{ restart }}"
     lxca_action: "{{ lxca_action }}"
     powerdown: "{{ powerdown }}"
@@ -14,4 +15,4 @@
     command_options: configprofiles
   register: rslt
   tags:
-     configprofiles
+    configprofiles

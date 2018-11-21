@@ -1,3 +1,4 @@
+---
 - name: Getting Firmware Update Status from LXCA
   pylxca_module:
     login_user: "{{ lxca_user }}"
@@ -6,4 +7,4 @@
     command_options: update_firmware_query_status
   register: rslt
   tags:
-     query_update_status
+    query_update_status

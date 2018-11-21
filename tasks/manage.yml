@@ -1,3 +1,4 @@
+---
 - block:
   - name: Managing given endpoint
     pylxca_module:
@@ -17,7 +18,7 @@
   - name: Check manage job submission
     assert:
       that:
-       -  " 'Success' in rslt_job.msg"
+        - " 'Success' in rslt_job.msg"
 
   - name: Polling for Status of Manage Operation
     pylxca_module:
@@ -37,7 +38,7 @@
   - name: Check manage job completion
     assert:
       that:
-       -  " 'SUCCESS' in result.result.results[0].result"
+        - " 'SUCCESS' in result.result.results[0].result"
 
   tags:
     manage

@@ -1,3 +1,4 @@
+---
 - block:
   - name: Get Jobid for import file to repository of osimages
     pylxca_module:
@@ -13,7 +14,8 @@
 
   - name: Check import_dict value
     set_fact:
-     mod_import_dict: "{{ import_dict | combine( {'jobId' : rslt.result.jobId }) }}"
+      mod_import_dict: "{{ import_dict |
+                        combine({'jobId' : rslt.result.jobId }) }}"
 
   - name: Post Job for import file to repository of osimages
     pylxca_module:
