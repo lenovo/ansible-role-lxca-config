@@ -4,6 +4,7 @@
     login_user: "{{ lxca_user }}"
     login_password: "{{ lxca_password }}"
     auth_url: "{{ lxca_url }}"
+    subcmd: "{{ subcmd }}"
     policy_info: "{{ policy_info }}"
     policy_name: "{{ policy_name }}"
     policy_type: "{{ policy_type }}"

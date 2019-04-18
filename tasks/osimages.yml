@@ -4,7 +4,8 @@
     login_user: "{{ lxca_user }}"
     login_password: "{{ lxca_password }}"
     auth_url: "{{ lxca_url }}"
-    osimages_info: "{{ osimages_info }}"
+    subcmd: "{{ subcmd }}"
+    id: "{{ id }}"
     osimages_dict: "{{ osimages_dict }}"
     command_options: osimages
   register: rslt
