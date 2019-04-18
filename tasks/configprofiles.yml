@@ -4,6 +4,7 @@
     login_user: "{{ lxca_user }}"
     login_password: "{{ lxca_password }}"
     auth_url: "{{ lxca_url }}"
+    subcmd: "{{ subcmd }}"
     id: "{{ id }}"
     config_profile_name: "{{ config_profile_name }}"
     endpoint: "{{ endpoint }}"

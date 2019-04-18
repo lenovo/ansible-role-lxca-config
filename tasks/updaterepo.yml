@@ -4,6 +4,7 @@
     login_user: "{{ lxca_user }}"
     login_password: "{{ lxca_password }}"
     auth_url: "{{ lxca_url }}"
+    subcmd: "{{ subcmd }}"
     repo_key: "{{ repo_key }}"
     lxca_action: "{{ lxca_action }}"
     machine_type: "{{ machine_type }}"

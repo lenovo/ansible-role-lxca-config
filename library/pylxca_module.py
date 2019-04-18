@@ -101,6 +101,9 @@ options:
         - rules
         - compositeResults
 
+  subcmd:
+    description: subcmd for some of configuration command
+
   lxca_action:
     description:
     - action performed on lxca, Used with following commands with option for lxca_action
@@ -158,7 +161,7 @@ options:
       - Used with following command
       - "manage - ip of endpoint to be managed
              i.e 10.240.72.172"
-      - "unamange - combination of ip,uuid of device and type of device
+      - "unmanage - combination of ip,uuid of device and type of device
              i.e 10.240.72.172;46920C143355486F97C19A34ABC7D746;Chassis
              type have following options
                 Chassis
@@ -179,7 +182,7 @@ options:
     description:
       for login to device
 
-  recovery_passwod:
+  recovery_password:
     description:
       recovery password to be set in device
 
@@ -235,6 +238,7 @@ options:
       - None
       - immediate
       - delayed
+      - prioritized
 
   server:
     description:
@@ -447,17 +451,18 @@ options:
          /home/naval/updates/updates/lnvgy_sw_lxca_thinksystemrepo1-1.3.2_anyos_noarch.chg,
          /home/naval/updates/updates/lnvgy_sw_lxca_thinksystemrepo1-1.3.2_anyos_noarch.xml'
 
-  osimages_info:
+  imagetype:
     description:
-      - Used with osimage it can have following values
-      - globalSettings - Setting global values used in os deployment
-      - hostPlatforms - Used for deploying os images
-      - remoteFileServers - Used for remote ftp, http server operations
+      - Used with osimage import type of files.
     choices:
-      - None
-      - globalSettings
-      - hostPlatforms
-      - remoteFileServers
+      - BUNDLE
+      - BOOT
+      - DUD
+      - OS
+      - OSPROFILE
+      - SCRIPT
+      - CUSTOM_CONFIG
+      - UNATTEND
 
   osimages_dict:
     type:
@@ -468,6 +473,13 @@ options:
   resource_group_name:
     description:
       name of resource group
+
+  resource_type:
+    description:
+      resource group type
+    choices:
+      - solution
+      - dynamic
 
   solutionVPD:
     type:
@@ -508,6 +520,7 @@ EXAMPLES = '''
 
 import os
 import imp
+import json
 from jsonpath_ng.ext import parse
 
 try:
@@ -557,6 +570,7 @@ class connection_object:
     def __init__(self, module, kwargs):
         self.module = module
         self.kwargs = kwargs
+
     def __enter__(self):
         return _get_connect_lxca(self.module, self.kwargs)
 
@@ -620,8 +634,8 @@ def _get_configstatus(module, kwargs):
     result = None
     try:
         with connection_object(module, kwargs) as con:
-            result = configpatterns(con, endpoint=kwargs.get(
-                'endpoint'), status=kwargs.get('status'))
+            result = configpatterns(con, subcmd='status', endpoint=kwargs.get(
+                'endpoint'))
             if 'items' in result and len(result['items']) and result['items'][0]:
                 result = result['items'][0]
     except Exception as err:
@@ -633,7 +647,7 @@ def _get_configpatterns(module, kwargs):
     result = None
     try:
         with connection_object(module, kwargs) as con:
-            result = configpatterns(con)
+            result = configpatterns(con, subcmd='list')
     except Exception as err:
         module.fail_json(msg="Error in configpatterns " + str(err))
     return result
@@ -646,7 +660,7 @@ def _get_particular_configpattern(module, kwargs):
             pattern_dict = {}
             pattern_dict['id'] = kwargs.get('id')
             pattern_dict['includeSettings'] = kwargs.get('includeSettings')
-            result = configpatterns(con, **pattern_dict)
+            result = configpatterns(con, subcmd='list', **pattern_dict)
     except Exception as err:
         module.fail_json(
             msg="Error in getting particular configpattern " + str(err))
@@ -664,7 +678,7 @@ def _apply_configpatterns(module, kwargs):
             pattern_dict['endpoint'] = kwargs.get('endpoint')
             pattern_dict['restart'] = kwargs.get('restart')
             pattern_dict['type'] = kwargs.get('type')
-            result = configpatterns(con, **pattern_dict)
+            result = configpatterns(con, subcmd='apply', **pattern_dict)
             __changed__ = True
     except Exception as err:
         module.fail_json(msg="Error in applying configpatterns" + str(err))
@@ -677,8 +691,9 @@ def _import_configpatterns(module, kwargs):
     try:
         with connection_object(module, kwargs) as con:
             pattern_dict = {}
-            pattern_dict['pattern_update_dict'] = kwargs.get('pattern_update_dict')
-            result = configpatterns(con, **pattern_dict)
+            json_str = json.dumps(kwargs.get('pattern_update_dict'))
+            pattern_dict['pattern_update_dict'] = json_str
+            result = configpatterns(con, subcmd='import', **pattern_dict)
             __changed__ = True
     except Exception as err:
         module.fail_json(msg="Error in import configpatterns" + str(err))
@@ -688,25 +703,18 @@ def _import_configpatterns(module, kwargs):
 def _get_configprofiles(module, kwargs):
     global __changed__
     result = None
-    delete_profile = None
-    unassign_profile = None
     try:
         with connection_object(module, kwargs) as con:
-            action = kwargs.get("lxca_action")
-            if action:
-                if action.lower() in ['delete']:
-                    delete_profile = 'True'
-                    __changed__ = True
-                elif action.lower() in ['unassign']:
-                    unassign_profile = 'True'
+            subcmd = kwargs.get("subcmd")
+            if subcmd:
+                if subcmd.lower() in ['delete', 'unassign']:
                     __changed__ = True
             result = configprofiles(con,
+                                    kwargs.get('subcmd'),
                                     kwargs.get('id'),
                                     kwargs.get('config_profile_name'),
                                     kwargs.get('endpoint'),
                                     kwargs.get('restart'),
-                                    delete_profile,
-                                    unassign_profile,
                                     kwargs.get('powerdown'),
                                     kwargs.get('resetimm'),
                                     kwargs.get('force'),)
@@ -793,6 +801,7 @@ def _manage_endpoint(module, kwargs):
     try:
         with connection_object(module, kwargs) as con:
             result = manage(con,
+                            'device',
                             kwargs.get('endpoint_ip'),
                             kwargs.get('user'),
                             kwargs.get('password'),
@@ -809,7 +818,7 @@ def _manage_status(module, kwargs):
     result = None
     try:
         with connection_object(module, kwargs) as con:
-            result = manage(con, None,
+            result = manage(con, 'job_status', None,
                             None, None, None, kwargs.get('jobid'))
     except Exception as err:
         module.fail_json(msg="Error getting info abt jobid" + str(err))
@@ -823,6 +832,7 @@ def _unmanage_endpoint(module, kwargs):
     try:
         with connection_object(module, kwargs) as con:
             result = unmanage(con,
+                              'device',
                               kwargs.get('endpoint_ip'),
                               kwargs.get('force'),
                               None)
@@ -836,7 +846,7 @@ def _unmanage_status(module, kwargs):
     result = None
     try:
         with connection_object(module, kwargs) as con:
-            result = unmanage(con, None, None, kwargs.get('jobid'))
+            result = unmanage(con, 'job_status', None, None, kwargs.get('jobid'))
     except Exception as err:
         module.fail_json(msg="Error getting info abt jobid" + str(err))
     return result
@@ -931,6 +941,7 @@ def _get_updaterepo_info(module, kwargs):
     try:
         with connection_object(module, kwargs) as con:
             result = updaterepo(con,
+                                kwargs.get('subcmd'),
                                 kwargs.get('repo_key'),
                                 kwargs.get('lxca_action'),
                                 kwargs.get('machine_type'),
@@ -947,12 +958,16 @@ def _update_firmware(module, kwargs):
     result = None
     try:
         with connection_object(module, kwargs) as con:
-            result = updatecomp(con, mode=kwargs.get('mode'),
+            cmm_json_str = json.dumps(kwargs.get('cmm'))
+            switch_json_str = json.dumps(kwargs.get('switch'))
+            server_json_str = json.dumps(kwargs.get('server'))
+            storage_json_str = json.dumps(kwargs.get('storage'))
+            result = updatecomp(con, 'apply', mode=kwargs.get('mode'),
                                 action=kwargs.get('lxca_action'),
-                                cmm=kwargs.get('cmm'),
-                                switch=kwargs.get('switch'),
-                                server=kwargs.get('server'),
-                                storage=kwargs.get('storage'))
+                                cmm=cmm_json_str,
+                                switch=switch_json_str,
+                                server=server_json_str,
+                                storage=storage_json_str)
         __changed__ = True
     except Exception as err:
         module.fail_json(msg="Error updating firmware " + str(err))
@@ -990,12 +1005,91 @@ def _valid_compliance_policies(policy_list):
     return uuid_list
 
 
+def _get_do_not_update_components(module, policies):
+    skip_components_dict = {}
+    server_list = []
+    cmm_list = []
+    storage_list = []
+    switch_list = []
+
+    # This dict can be updated based as you found type which are not covered here
+    type_to_name_dict = {"XCC-Backup": "XCC (Backup)",
+                         "UEFI-Backup": "UEFI (Backup)"}
+    for policy in policies:
+
+        if len(policy['deviceslist']) > 0:
+            uuids = policy['deviceslist']
+            comp_details = policy['details']
+            components_list = []
+
+            for comp in comp_details:
+                for c in comp['components']:
+                    if c['targetVersion'].find('DoNotUpdate') == 0:
+                        if c['type'] not in type_to_name_dict:
+                            module.fail_json(msg="Following type is missing from type_to_name_dict " + c['type'])
+                        else:
+                            comp_dict = {"Component": type_to_name_dict[c['type']]}
+                            components_list.append(comp_dict)
+
+            if components_list:
+                for uuid_dict in uuids:
+                    skip_dict = {}
+                    skip_dict['uuid'] = uuid_dict['uuid']
+                    skip_dict['Components'] = components_list
+                    if uuid_dict['type'] == 'SERVER':
+                        server_list.append(skip_dict)
+                    elif uuid_dict['type'] == 'CMM':
+                        cmm_list.append(skip_dict)
+                    elif uuid_dict['type'] == 'Storage':
+                        storage_list.append(skip_dict)
+                    elif uuid_dict['type'] == 'Switch':
+                        switch_list.append(skip_dict)
+
+    skip_components_dict['ServerList'] = server_list
+    skip_components_dict['CMMList'] = cmm_list
+    skip_components_dict['StorageList'] = storage_list
+    skip_components_dict['SwitchList'] = switch_list
+
+    return skip_components_dict
+
+
+def _remove_components(device_list, dev_type_list, del_uuid, del_component):
+    del_component_bool = False
+    del_uuid_bool = False
+    for dev_dict in device_list:
+        if dev_type_list in dev_dict:
+            if len(dev_dict[dev_type_list]) > 0:
+                for sev_dict in dev_dict[dev_type_list]:
+                    if del_uuid == sev_dict['UUID']:
+                        len_of_components = len(sev_dict['Components'])
+                        ###
+                        new_Compnents = [x for x in sev_dict['Components'] if not (del_component == x.get('Component'))]
+                        sev_dict['Components'] = new_Compnents
+                        if len(new_Compnents) < len_of_components:
+                            del_component_bool = True
+                        if del_component_bool:
+                            if len(new_Compnents) == 0:
+                                del_uuid_bool = True
+            if del_uuid_bool:
+                new_dev_list = [x for x in dev_dict[dev_type_list] if not (del_uuid == x.get('UUID'))]
+                dev_dict[dev_type_list] = new_dev_list
+
+
+def _call_remove_components(skip_dict, from_device_list):
+    for dev_type_list in ['ServerList', 'CMMList', 'StorageList', 'SwtichList']:
+        if dev_type_list in skip_dict:
+            if len(skip_dict[dev_type_list]) > 0:
+                for sev_dict in skip_dict[dev_type_list]:
+                    for comp_dict in sev_dict['Components']:
+                        _remove_components(from_device_list, dev_type_list, sev_dict['uuid'], comp_dict['Component'])
+
+
 def _update_firmware_all(module, kwargs):
     global __changed__
     result = None
     try:
         with connection_object(module, kwargs) as con:
-            rep = updatepolicy(con, info="NAMELIST")
+            rep = updatepolicy(con, 'query', info="NAMELIST")
             uuid_list = _valid_compliance_policies(rep['policies'])
             if len(uuid_list) == 0:
                 module.fail_json(msg="No policy assigned to any device")
@@ -1008,7 +1102,7 @@ def _update_firmware_all(module, kwargs):
                     # getting common uuid of two list
                     uuid_list = list(set(dev_uuid_list).intersection(uuid_list))
 
-            rep = updatecomp(con, query='components')
+            rep = updatecomp(con, 'info', query='components')
             ret_dev_list = rep['DeviceList']
             mod_dev_list = _transform_devicelist(ret_dev_list, uuid_list)
             if len(mod_dev_list) == 0:
@@ -1016,8 +1110,14 @@ def _update_firmware_all(module, kwargs):
                     msg="No updateable component with assigned policy found")
                 return result
 
-            result = updatecomp(con, mode=kwargs.get(
-                'mode'), action=kwargs.get('lxca_action'), dev_list=mod_dev_list)
+            # removing component with DoNotUpdate
+            rep = updatepolicy(con, 'query', info="RESULT")
+            skip_components = _get_do_not_update_components(module, rep['policies'])
+            _call_remove_components(skip_components, mod_dev_list)
+
+            dev_json_str = json.dumps(mod_dev_list)
+            result = updatecomp(con, 'apply', mode=kwargs.get(
+                'mode'), action=kwargs.get('lxca_action'), dev_list=dev_json_str)
             __changed__ = True
     except Exception as err:
         module.fail_json(msg="Error updating all device firmware " + str(err))
@@ -1028,7 +1128,7 @@ def _update_firmware_query_status(module, kwargs):
     result = None
     try:
         with connection_object(module, kwargs) as con:
-            result = updatecomp(con, query='status')
+            result = updatecomp(con, 'info', query='status')
     except Exception as err:
         module.fail_json(msg="Error updating firmware " + str(err))
     return result
@@ -1038,7 +1138,7 @@ def _update_firmware_query_comp(module, kwargs):
     result = None
     try:
         with connection_object(module, kwargs) as con:
-            result = updatecomp(con, query='components')
+            result = updatecomp(con, 'info', query='components')
     except Exception as err:
         module.fail_json(msg="Error updating firmware " + str(err))
     return result
@@ -1049,6 +1149,7 @@ def _get_managementserver_pkg(module, kwargs):
     try:
         with connection_object(module, kwargs) as con:
             result = managementserver(con,
+                                      kwargs.get('subcmd'),
                                       kwargs.get('update_key'),
                                       kwargs.get('fixids'),
                                       kwargs.get('type'))
@@ -1063,10 +1164,10 @@ def _update_managementserver_pkg(module, kwargs):
     try:
         with connection_object(module, kwargs) as con:
             result = managementserver(con,
+                                      kwargs.get('subcmd'),
                                       kwargs.get('update_key'),
                                       kwargs.get('fixids'),
-                                      kwargs.get('type'),
-                                      kwargs.get('lxca_action'),)
+                                      kwargs.get('type'))
             __changed__ = True
     except Exception as err:
         module.fail_json(
@@ -1080,10 +1181,10 @@ def _import_managementserver_pkg(module, kwargs):
     try:
         with connection_object(module, kwargs) as con:
             result = managementserver(con,
+                                      kwargs.get('subcmd'),
                                       kwargs.get('update_key'),
                                       kwargs.get('fixids'),
                                       kwargs.get('type'),
-                                      kwargs.get('lxca_action'),
                                       kwargs.get('files'),
                                       kwargs.get('jobid'))
             __changed__ = True
@@ -1097,6 +1198,7 @@ def _get_updatepolicy(module, kwargs):
     try:
         with connection_object(module, kwargs) as con:
             result = updatepolicy(con,
+                                  kwargs.get('subcmd'),
                                   kwargs.get('policy_info'),
                                   kwargs.get('jobid'),
                                   kwargs.get('uuid'),
@@ -1111,21 +1213,31 @@ def _get_osimages(module, kwargs):
     result = None
     try:
         with connection_object(module, kwargs) as con:
-            osimages_info = kwargs.get('osimages_info')
+            subcmd = kwargs.get('subcmd')
             osimages_dict = kwargs.get('osimages_dict')
-            if osimages_info and osimages_dict:
+            if subcmd and osimages_dict:
+                json_str = json.dumps(osimages_dict)
+                if subcmd in ['import']:
+                    result = osimages(con,
+                                      subcmd, imagetype=kwargs.get('imagetype'),
+                                      osimages_dict=json_str)
+                elif subcmd in ['hostsettings']:
+                    result = osimages(con,
+                                      subcmd, action=osimages_dict['action'],
+                                      osimages_dict=json_str)
+                else:
+                    result = osimages(con,
+                                      subcmd,
+                                      osimages_dict=json_str)
+            elif subcmd in ['delete']:
                 result = osimages(con,
-                                  osimages_info,
-                                  **osimages_dict)
-            elif osimages_dict:
+                                  subcmd, id=kwargs.get('id'))
+            elif subcmd in ['import']:
                 result = osimages(con,
-                                  **osimages_dict)
-
-            elif osimages_info:
+                                  subcmd, imagetype=kwargs.get('imagetype'))
+            elif subcmd:
                 result = osimages(con,
-                                  osimages_info)
-            else:
-                result = osimages(con)
+                                  subcmd)
     except Exception as err:
         module.fail_json(msg="Error processing osimages " + str(err))
     return result
@@ -1139,6 +1251,7 @@ def _get_users(module, kwargs):
     except Exception as err:
         module.fail_json(msg="Error getting users " + str(err))
     return result
+
 
 def _load_compliance_plugin(location, name):
     plugin = None
@@ -1202,20 +1315,51 @@ def _validate_plugin_rules(module, kwargs):
     module.exit_json(
         changed=True, msg="Executed Compliance Validation through Plugin", result=compliance_status)
 
+def _create_dynamic_resourcegroups(module, kwargs):
+    global __changed__
+    result = None
+    json_str = json.dumps(kwargs.get('criteria_dynamic'))
+    param_dict = {'name': kwargs.get('resource_group_name'),
+                  'description': kwargs.get('description'),
+                  'type': kwargs.get('resource_type'),
+                  'criteria': json_str}
+    try:
+
+        with connection_object(module, kwargs) as con:
+            result = resourcegroups(con, subcmd='create', **param_dict)
+            __changed__ = True
+    except Exception as err:
+        module.fail_json(msg="Error Creating Dynamic Resource Group " + str(err))
+    return result
+
+
+def _update_dynamic_resourcegroups(module, kwargs):
+    global __changed__
+    result = None
+    try:
+        with connection_object(module, kwargs) as con:
+            result = resourcegroups(con, 'update', uuid=kwargs.get(
+                'uuid'), members=kwargs.get('members'), type='solution')
+            __changed__ = True
+    except Exception as err:
+        module.fail_json(msg="Error updating resource group " + str(err))
+    return result
+
+
 
 def _create_resourcegroups(module, kwargs):
     global __changed__
     result = None
     param_dict = {'name': kwargs.get('resource_group_name'),
                   'description': kwargs.get('description'),
-                  'type': kwargs.get('type'),
+                  'type': kwargs.get('resource_type'),
                   'solutionVPD': kwargs.get('solutionVPD'),
                   'members': kwargs.get('members'),
                   'criteria': kwargs.get('criteria')}
     try:
 
         with connection_object(module, kwargs) as con:
-            result = resourcegroups(con, **param_dict)
+            result = resourcegroups(con, subcmd='create', **param_dict)
             __changed__ = True
     except Exception as err:
         module.fail_json(msg="Error Creating Resource Group " + str(err))
@@ -1227,8 +1371,8 @@ def _add_resourcegroup_member(module, kwargs):
     result = None
     try:
         with connection_object(module, kwargs) as con:
-            result = resourcegroups(con, uuid=kwargs.get(
-                'uuid'), members=kwargs.get('members'))
+            result = resourcegroups(con, 'update', uuid=kwargs.get(
+                'uuid'), members=kwargs.get('members'), type='solution')
             __changed__ = True
     except Exception as err:
         module.fail_json(msg="Error adding resource group member " + str(err))
@@ -1239,7 +1383,7 @@ def _get_resourcegroups(module, kwargs):
     result = None
     try:
         with connection_object(module, kwargs) as con:
-            result = resourcegroups(con, uuid=kwargs.get('uuid'))
+            result = resourcegroups(con, 'list', uuid=kwargs.get('uuid'))
     except Exception as err:
         module.fail_json(msg="Error getting users " + str(err))
     return result
@@ -1377,6 +1521,8 @@ FUNC_DICT = {
     'validate_plugin_rules': _validate_plugin_rules,
     'get_resourcegroups': _get_resourcegroups,
     'create_resourcegroups': _create_resourcegroups,
+    'create_dynamic_resourcegroups': _create_dynamic_resourcegroups,
+    'update_dynamic_resourcegroups': _update_dynamic_resourcegroups,
     'add_resourcegroup_member': _add_resourcegroup_member,
     'compliance_engine': _compliance_engine,
     'rules': _rules,
@@ -1385,11 +1531,9 @@ FUNC_DICT = {
 }
 
 
-
 # ===========================================
 # Main
 #
-
 def main():
     """
     Main entry point for this module
@@ -1400,6 +1544,7 @@ def main():
             login_user=dict(default=None, required=False),
             login_password=dict(default=None, required=False, no_log=True),
             command_options=dict(choices=list(FUNC_DICT)),
+            subcmd=dict(default=None),
             lxca_action=dict(
                 default=None,
                 choices=['apply', 'power', 'cancelApply', 'read', 'refresh',
@@ -1444,14 +1589,12 @@ def main():
                       choices=[None, 'node', 'rack', 'tower', 'flex']),
             config_pattern_name=dict(default=None),
             config_profile_name=dict(default=None),
-            resource_group_name=dict(default=None),
             powerdown=dict(default=None),
             resetimm=dict(default=None),
             pattern_update_dict=dict(default=None, type=('dict')),
             includeSettings=dict(default=None),
-            osimages_info=dict(default=None,
-                               choices=[None, 'globalSettings', 'hostPlatforms',
-                                        'remoteFileServers']),
+            imagetype=dict(default=None,
+                           choices=["BUNDLE", "BOOT", "DUD", "OS", "OSPROFILE", "SCRIPT", "CUSTOM_CONFIG", "UNATTEND"]),
             osimages_dict=dict(default=None, type=('dict')),
             update_key=dict(default=None,
                             choices=['all', 'currentVersion', 'history', 'importDir',
@@ -1464,9 +1607,13 @@ def main():
             inv_data=dict(default=None, type=('dict')),
             BASIC_RULES=dict(default=None, type=('list')),
             comp_rule=dict(default=None, type=('dict')),
+            resource_group_name=dict(default=None),
+            resource_type=dict(default=None,
+                      choices=[None, 'solution', 'dynamic']),
             solutionVPD=dict(default=None, type=('dict')),
             members=dict(default=None, type=('list')),
             criteria=dict(default=None, type=('list')),
+            criteria_dynamic=dict(default=None),
             fact_dict=dict(default=None, type=('dict')),
             sol_id=dict(default=None),
             manifest_path=dict(default=None),

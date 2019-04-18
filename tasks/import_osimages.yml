@@ -5,7 +5,8 @@
       login_user: "{{ lxca_user }}"
       login_password: "{{ lxca_password }}"
       auth_url: "{{ lxca_url }}"
-      osimages_dict: "{{ osimages_imagetype_dict }}"
+      subcmd: import
+      imagetype: "{{ imagetype }}"
       command_options: osimages
     register: rslt
 
@@ -22,6 +23,8 @@
       login_user: "{{ lxca_user }}"
       login_password: "{{ lxca_password }}"
       auth_url: "{{ lxca_url }}"
+      subcmd: import
+      imagetype: "{{ imagetype }}"
       osimages_dict: "{{ mod_import_dict }}"
       command_options: osimages
     register: rslt

@@ -41,3 +41,6 @@ status: null
 uuid_list: null
 storedcredential_id: null
 description: null
+subcmd: null
+imagetype: null
+

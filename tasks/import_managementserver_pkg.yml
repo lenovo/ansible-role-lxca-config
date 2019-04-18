@@ -5,7 +5,7 @@
       login_user: "{{ lxca_user }}"
       login_password: "{{ lxca_password }}"
       auth_url: "{{ lxca_url }}"
-      lxca_action: "{{ lxca_action }}"
+      subcmd: "{{ subcmd }}"
       files: "{{ files }}"
       command_options: import_managementserver_pkg
     register: rslt
@@ -18,7 +18,7 @@
       login_user: "{{ lxca_user }}"
       login_password: "{{ lxca_password }}"
       auth_url: "{{ lxca_url }}"
-      lxca_action: "{{ lxca_action }}"
+      subcmd: "{{ subcmd }}"
       files: "{{ files }}"
       jobid: "{{ rslt.result.jobid }}"
       command_options: import_managementserver_pkg
