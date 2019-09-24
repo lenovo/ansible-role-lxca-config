@@ -12,7 +12,7 @@ Requirements
   documentation](http://docs.ansible.com/ansible/intro_installation.html))
 
 - Python Client for Lenovo xClarity Administratr.([LXCA Python Client
-  v2.0.0](https://github.com/lenovo/pylxca))
+  v2.5.0](https://github.com/lenovo/pylxca))
 
    pip install pylxca
 
