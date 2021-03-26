@@ -22,23 +22,24 @@
 
   - name: Polling for Status of Manage Operation
     pylxca_module:
-      command_options: manage_status
+      command_options: tasks
       login_user: "{{ lxca_user }}"
       login_password: "{{ lxca_password }}"
       auth_url: "{{ lxca_url }}"
-      jobid: "{{ rslt_job.result }}"
+      id: "{{ rslt_job.result.manageRequestResponse.jobID }}"
     register: result
-    until: result.result.progress == 100.0
+    until: result.result.TaskList[0].percentage == 100
     retries: 40
     delay: 15
 
+
   - debug:
-      var: result.result.results[0].result
+      var: result.result.TaskList[0].status
 
   - name: Check manage job completion
     assert:
       that:
-        - " 'SUCCESS' in result.result.results[0].result"
+        - " 'Complete' in result.result.TaskList[0].status"
 
   tags:
     manage

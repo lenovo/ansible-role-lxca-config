@@ -16,19 +16,25 @@
       that:
         - " 'Success' in rslt_job.msg"
 
-  - name: Polling for Status of UnManage Operation
+  - name: Polling for Status of Unmanage Operation
     pylxca_module:
-      command_options: unmanage_status
+      command_options: tasks
       login_user: "{{ lxca_user }}"
       login_password: "{{ lxca_password }}"
       auth_url: "{{ lxca_url }}"
-      jobid: "{{ rslt_job.result }}"
+      id: "{{ rslt_job.result.unmanageRequestResponse.jobID }}"
     register: result
-    until: result.result.progress == 100.0
+    until: result.result.TaskList[0].percentage == 100
     retries: 20
     delay: 15
 
   - debug:
-      var: result.result.progress
+      var: result.result.TaskList[0].status
+
+  - name: Check unmanage job completion
+    assert:
+      that:
+        - " 'Complete' in result.result.TaskList[0].status"
+
   tags:
     unmanage
