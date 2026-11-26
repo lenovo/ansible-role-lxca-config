@@ -150,9 +150,9 @@ options:
     description:
       - Used with following command
       - "manage - ip of endpoint to be managed
-             i.e 10.240.72.172"
+             i.e 192.0.2.20"
       - "unmanage - combination of ip,uuid of device and type of device
-             i.e 10.240.72.172;46920C143355486F97C19A34ABC7D746;Chassis
+             i.e 192.0.2.20;11111111111111111111111111111111;Chassis
              type have following options
                 Chassis
                 ThinkServer
@@ -238,8 +238,8 @@ options:
                 Component name
                 name: IMM2 (Backup)"
 
-      - "Example '7C5E041E3CCA11E18B715CF3FC112D8A,IMM2 (Backup)' or
-                '7C5E041E3CCA11E18B715CF3FC112D8A,lnvgy_fw_imm2_tcoo15m-2.50_anyos_noarch,IMM2 (Backup)'"
+      - "Example '55555555555555555555555555555555,IMM2 (Backup)' or
+                '55555555555555555555555555555555,lnvgy_fw_imm2_tcoo15m-2.50_anyos_noarch,IMM2 (Backup)'"
 
   storage:
     description:
@@ -249,8 +249,8 @@ options:
                 Component name
                 name: IMM2 (Backup)"
 
-      - "Example '7C5E041E3CCA11E18B715CF3FC112D8A,IMM2 (Backup)' or
-                '7C5E041E3CCA11E18B715CF3FC112D8A,lnvgy_fw_imm2_tcoo15m-2.50_anyos_noarch,IMM2 (Backup)'"
+      - "Example '55555555555555555555555555555555,IMM2 (Backup)' or
+                '55555555555555555555555555555555,lnvgy_fw_imm2_tcoo15m-2.50_anyos_noarch,IMM2 (Backup)'"
 
   cmm:
     description:
@@ -260,8 +260,8 @@ options:
                 Component name
                 name: IMM2 (Backup)"
 
-      - "Example '7C5E041E3CCA11E18B715CF3FC112D8A,IMM2 (Backup)' or
-                '7C5E041E3CCA11E18B715CF3FC112D8A,lnvgy_fw_imm2_tcoo15m-2.50_anyos_noarch,IMM2 (Backup)'"
+      - "Example '55555555555555555555555555555555,IMM2 (Backup)' or
+                '55555555555555555555555555555555,lnvgy_fw_imm2_tcoo15m-2.50_anyos_noarch,IMM2 (Backup)'"
 
   switch:
     description:
@@ -271,13 +271,13 @@ options:
                 Component name
                 name: IMM2 (Backup)"
 
-      - "Example '7C5E041E3CCA11E18B715CF3FC112D8A,IMM2 (Backup)' or
-                '7C5E041E3CCA11E18B715CF3FC112D8A,lnvgy_fw_imm2_tcoo15m-2.50_anyos_noarch,IMM2 (Backup)'"
+      - "Example '55555555555555555555555555555555,IMM2 (Backup)' or
+                '55555555555555555555555555555555,lnvgy_fw_imm2_tcoo15m-2.50_anyos_noarch,IMM2 (Backup)'"
 
   uuid_list:
     description:
       - used with command update_all_firmware_withpolicy. Apply firmware to uuid in list
-      - "example ['38D9D7DBCB713C12A210E60C74A0E931','00000000000010008000542AA2D3CB00']"
+      - "example ['22222222222222222222222222222222','33333333333333333333333333333333']"
 
   policy_info:
     description:
@@ -437,9 +437,9 @@ options:
     description:
       - Used with managementserver commands to import files to LXCA file can be specified as comma separated string
       - example
-      - '/home/naval/updates/updates/lnvgy_sw_lxca_thinksystemrepo1-1.3.2_anyos_noarch.txt,
-         /home/naval/updates/updates/lnvgy_sw_lxca_thinksystemrepo1-1.3.2_anyos_noarch.chg,
-         /home/naval/updates/updates/lnvgy_sw_lxca_thinksystemrepo1-1.3.2_anyos_noarch.xml'
+      - '/home/example/updates/updates/lnvgy_sw_lxca_thinksystemrepo1-1.3.2_anyos_noarch.txt,
+         /home/example/updates/updates/lnvgy_sw_lxca_thinksystemrepo1-1.3.2_anyos_noarch.chg,
+         /home/example/updates/updates/lnvgy_sw_lxca_thinksystemrepo1-1.3.2_anyos_noarch.xml'
 
   imagetype:
     description:
@@ -475,9 +475,9 @@ EXAMPLES = '''
 - name: get cmms data from LXCA
   pylxca_module:
     command_options: cmms
-    login_userr: USERID
-    login_password: CME44ibm
-    auth_url: "https://10.243.15.168"
+    login_user: example-user
+    login_password: example-password
+    auth_url: "https://192.0.2.30"
 '''
 
 import os
